@@ -10,7 +10,7 @@ st.set_page_config(
 st.title("💡 Business Insights & Recommendations")
 
 # =====================================
-# LOAD DATA FROM SESSION STATE
+# LOAD DATA
 # =====================================
 
 df = st.session_state.get("df")
@@ -69,34 +69,60 @@ col4.metric(
 # BUSINESS INSIGHTS
 # =====================================
 
-top_country = (
+country_counts = (
     df["country"]
     .dropna()
     .value_counts()
-    .idxmax()
+)
+
+top_country = (
+    country_counts.idxmax()
+    if not country_counts.empty
+    else "N/A"
+)
+
+year_counts = (
+    df["release_year"]
+    .dropna()
+    .value_counts()
 )
 
 top_year = (
-    df["release_year"]
-    .value_counts()
-    .idxmax()
+    year_counts.idxmax()
+    if not year_counts.empty
+    else "N/A"
 )
 
-top_rating = (
+rating_counts = (
     df["rating"]
     .dropna()
     .value_counts()
-    .idxmax()
 )
 
-top_genre = (
+top_rating = (
+    rating_counts.idxmax()
+    if not rating_counts.empty
+    else "N/A"
+)
+
+genre_counts = (
     df["listed_in"]
     .dropna()
+    .astype(str)
     .str.split(", ")
     .explode()
     .value_counts()
-    .idxmax()
 )
+
+top_genre = (
+    genre_counts.idxmax()
+    if not genre_counts.empty
+    else "N/A"
+)
+
+# =====================================
+# KEY INSIGHTS
+# =====================================
 
 st.subheader("🔍 Key Insights")
 
@@ -176,7 +202,7 @@ st.dataframe(
 )
 
 # =====================================
-# NUMERIC STATISTICS
+# NUMERICAL STATISTICS
 # =====================================
 
 st.subheader("📋 Numerical Statistics")

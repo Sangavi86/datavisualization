@@ -17,17 +17,15 @@ st.set_page_config(
 st.title("📄 Netflix Analytics Report Generator")
 
 # =====================================
-# LOAD DATA FROM SESSION STATE
+# LOAD DATA
 # =====================================
 
 df = st.session_state.get("df")
 
 if df is None:
-
     st.warning(
         "Please upload the Netflix dataset from the App page."
     )
-
     st.stop()
 
 # =====================================
@@ -46,45 +44,64 @@ total_tvshows = len(
     df[df["type"] == "TV Show"]
 )
 
-top_country = (
+country_counts = (
     df["country"]
     .dropna()
     .value_counts()
-    .idxmax()
 )
 
-top_rating = (
+top_country = (
+    country_counts.idxmax()
+    if not country_counts.empty
+    else "N/A"
+)
+
+rating_counts = (
     df["rating"]
     .dropna()
     .value_counts()
-    .idxmax()
 )
 
-top_genre = (
+top_rating = (
+    rating_counts.idxmax()
+    if not rating_counts.empty
+    else "N/A"
+)
+
+genre_counts = (
     df["listed_in"]
     .dropna()
+    .astype(str)
     .str.split(", ")
     .explode()
     .value_counts()
-    .idxmax()
+)
+
+top_genre = (
+    genre_counts.idxmax()
+    if not genre_counts.empty
+    else "N/A"
 )
 
 col1, col2, col3 = st.columns(3)
 
-col1.metric(
-    "Total Titles",
-    total_titles
-)
+with col1:
+    st.metric(
+        "Total Titles",
+        total_titles
+    )
 
-col2.metric(
-    "Movies",
-    total_movies
-)
+with col2:
+    st.metric(
+        "Movies",
+        total_movies
+    )
 
-col3.metric(
-    "TV Shows",
-    total_tvshows
-)
+with col3:
+    st.metric(
+        "TV Shows",
+        total_tvshows
+    )
 
 st.metric(
     "Top Country",
@@ -130,60 +147,37 @@ if st.button("Generate PDF Report"):
 
     styles = getSampleStyleSheet()
 
-    content = []
-
-    content.append(
+    content = [
         Paragraph(
             "Netflix Analytics Report",
             styles["Title"]
-        )
-    )
-
-    content.append(
-        Spacer(1, 12)
-    )
-
-    content.append(
+        ),
+        Spacer(1, 12),
         Paragraph(
             f"Total Titles: {total_titles}",
             styles["BodyText"]
-        )
-    )
-
-    content.append(
+        ),
         Paragraph(
             f"Movies: {total_movies}",
             styles["BodyText"]
-        )
-    )
-
-    content.append(
+        ),
         Paragraph(
             f"TV Shows: {total_tvshows}",
             styles["BodyText"]
-        )
-    )
-
-    content.append(
+        ),
         Paragraph(
             f"Top Country: {top_country}",
             styles["BodyText"]
-        )
-    )
-
-    content.append(
+        ),
         Paragraph(
             f"Top Genre: {top_genre}",
             styles["BodyText"]
-        )
-    )
-
-    content.append(
+        ),
         Paragraph(
             f"Most Common Rating: {top_rating}",
             styles["BodyText"]
         )
-    )
+    ]
 
     doc.build(content)
 
@@ -194,7 +188,7 @@ if st.button("Generate PDF Report"):
 
         st.download_button(
             label="⬇ Download PDF Report",
-            data=pdf_file,
+            data=pdf_file.read(),
             file_name="Netflix_Analytics_Report.pdf",
             mime="application/pdf"
         )

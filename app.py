@@ -1,76 +1,89 @@
 import streamlit as st
 import pandas as pd
 
-# =====================================
-# PAGE CONFIG
-# =====================================
-
 st.set_page_config(
-    page_title="Netflix Analytics & Recommendation Platform",
+    page_title="Netflix Analytics & AI Recommendation Platform",
     page_icon="🎬",
     layout="wide"
 )
+
+# =====================================
+# SIDEBAR
+# =====================================
+
+st.sidebar.success("Netflix Analytics Platform v2.0")
+
+st.sidebar.markdown("""
+### Modules
+
+📊 Dashboard
+
+📈 Visualizations
+
+🎯 Recommendations
+
+💡 Insights
+
+📄 Reports
+""")
 
 # =====================================
 # SESSION STATE
 # =====================================
 
 if "df" not in st.session_state:
-    st.session_state.df = None
+    st.session_state["df"] = None
 
 # =====================================
 # HEADER
 # =====================================
 
-st.title("🎬 Netflix Analytics & Recommendation Platform")
+st.title("🎬 Netflix Analytics & AI Recommendation Platform")
 
 st.markdown("""
 ## Welcome
 
-This project provides:
-
-✅ Dashboard Analytics
-
-✅ Interactive Visualizations
-
-✅ Advanced Analytics
-
-✅ Business Insights
-
-✅ Recommendation System
-
-✅ Data Cleaning
-
-✅ Smart Insights
-
-✅ Report Generation
+This platform provides advanced Netflix analytics,
+machine learning recommendations, business insights,
+data cleaning, reporting and predictive analytics.
 
 ---
 
-### Features
+### Key Features
 
-- Netflix Content Analysis
-- Genre Analytics
-- Country Analytics
-- Ratings Analysis
-- Director Analytics
-- Search Functionality
-- Recommendation Engine
-- Business Intelligence Insights
-- Dataset Cleaning
-- PDF Report Generation
+✅ Interactive Dashboard
+
+✅ Advanced Visualizations
+
+✅ Business Intelligence Analytics
+
+✅ Smart Insights Engine
+
+✅ AI Recommendation System (TF-IDF)
+
+✅ Data Cleaning & Preprocessing
+
+✅ PDF Report Generation
 
 ---
 
-### Tech Stack
+### Technology Stack
 
 - Python
 - Streamlit
 - Pandas
-- Plotly
 - NumPy
+- Plotly
+- Scikit-Learn
+- ReportLab
 
 ---
+
+### Dataset
+
+Netflix Movies and TV Shows Dataset
+
+Upload your dataset using the sidebar to begin.
 """)
 
 # =====================================
@@ -80,7 +93,7 @@ This project provides:
 st.sidebar.header("📂 Dataset Upload")
 
 uploaded_file = st.sidebar.file_uploader(
-    "Upload Netflix Dataset",
+    "Upload netflix_titles.csv",
     type=["csv"]
 )
 
@@ -90,31 +103,67 @@ if uploaded_file is not None:
 
         df = pd.read_csv(uploaded_file)
 
-        st.session_state.df = df
+        st.session_state["df"] = df
 
         st.sidebar.success(
-            f"Dataset Loaded ({len(df)} records)"
+            f"Dataset Loaded Successfully ({len(df)} records)"
+        )
+
+        st.sidebar.info(
+            f"Columns Detected: {len(df.columns)}"
         )
 
     except Exception as e:
 
         st.sidebar.error(
-            f"Error loading dataset: {e}"
+            f"Dataset Error: {e}"
         )
+
+# =====================================
+# DATASET VALIDATION
+# =====================================
+
+if st.session_state["df"] is not None:
+
+    df = st.session_state["df"]
+
+    required_columns = [
+        "title",
+        "type",
+        "country",
+        "listed_in",
+        "rating",
+        "release_year",
+        "description"
+    ]
+
+    missing_columns = [
+        col
+        for col in required_columns
+        if col not in df.columns
+    ]
+
+    if missing_columns:
+
+        st.error(
+            f"Missing Required Columns: {missing_columns}"
+        )
+
+        st.stop()
 
 # =====================================
 # DATASET STATUS
 # =====================================
 
-if st.session_state.df is not None:
+if st.session_state["df"] is not None:
 
-    df = st.session_state.df
+    df = st.session_state["df"]
 
     st.success(
         "✅ Dataset Loaded Successfully"
     )
 
-    col1, col2, col3 = st.columns(3)
+    col1, col2, col3, col4 = st.columns(4)
 
     col1.metric(
         "Total Records",
@@ -131,11 +180,38 @@ if st.session_state.df is not None:
         int(df.isnull().sum().sum())
     )
 
+    col4.metric(
+        "Duplicate Rows",
+        int(df.duplicated().sum())
+    )
+
     st.subheader("📄 Dataset Preview")
 
     st.dataframe(
         df.head(10),
         use_container_width=True
+    )
+
+    # =====================================
+    # DATASET HEALTH SCORE
+    # =====================================
+
+    st.divider()
+
+    st.subheader("📋 Dataset Health Score")
+
+    total_cells = df.shape[0] * df.shape[1]
+
+    missing_cells = df.isnull().sum().sum()
+
+    health_score = round(
+        ((total_cells - missing_cells) / total_cells) * 100,
+        2
+    )
+
+    st.metric(
+        "Dataset Quality Score",
+        f"{health_score}%"
     )
 
 else:
@@ -145,7 +221,7 @@ else:
     )
 
 # =====================================
-# PROJECT MODULES
+# AVAILABLE MODULES
 # =====================================
 
 st.divider()
@@ -155,41 +231,46 @@ st.subheader("📌 Available Modules")
 st.markdown("""
 ### 📊 Dashboard
 - KPI Cards
+- Advanced Filters
 - Search Functionality
 - Dataset Overview
 
 ### 📈 Visualizations
 - Movies vs TV Shows
+- Content Growth Trends
 - Top Countries
-- Genre Distribution
-- Ratings Analysis
-- Growth Trends
+- Genre Analytics
+- Ratings Analytics
 
-### 📊 Analytics
-- Director Analytics
-- Actor Analytics
-- Country Analytics
+### 💡 Business Insights
+- Executive Summary
+- Strategic Recommendations
+- Data Quality Analysis
 
-### 💡 Insights
-- Business Intelligence
-- Statistical Insights
-
-### 🎯 Recommendations
-- Genre-Based Recommendations
-- Title Search
+### 🎯 AI Recommendation Engine
+- TF-IDF Vectorization
+- Cosine Similarity
+- Content-Based Recommendations
 
 ### 🧹 Data Cleaning
 - Missing Values Analysis
 - Duplicate Detection
 
 ### 🧠 Smart Insights
-- Automated Executive Insights
-- Strategic Recommendations
+- Automated Insights
+- Business Intelligence
 
 ### 📄 Reports
 - PDF Report Generation
+- Executive Summaries
 """)
 
-st.info(
-    "Use the pages in the left sidebar after uploading the dataset."
+# =====================================
+# FOOTER
+# =====================================
+
+st.divider()
+
+st.caption(
+    "Built using Streamlit, Pandas, Plotly, Scikit-Learn and ReportLab."
 )

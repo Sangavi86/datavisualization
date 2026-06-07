@@ -2,7 +2,7 @@ import streamlit as st
 import pandas as pd
 
 st.set_page_config(
-    page_title="Dashboard",
+    page_title="Netflix Dashboard",
     page_icon="📊",
     layout="wide"
 )
@@ -10,22 +10,22 @@ st.set_page_config(
 st.title("🎬 Netflix Analytics Dashboard")
 
 # =====================================
-# LOAD DATA FROM SESSION STATE
+# LOAD DATA
 # =====================================
 
 df = st.session_state.get("df")
 
 if df is None:
     st.warning(
-        "Please upload the Netflix dataset from the App page."
+        "Please upload netflix_titles.csv first."
     )
     st.stop()
 
 # =====================================
-# SIDEBAR FILTERS
+# FILTERS
 # =====================================
 
-st.sidebar.header("Dashboard Filters")
+st.sidebar.header("🎛 Dashboard Filters")
 
 content_type = st.sidebar.multiselect(
     "Content Type",
@@ -49,22 +49,24 @@ filtered_df = df.copy()
 
 if content_type:
     filtered_df = filtered_df[
-        filtered_df["type"].isin(content_type)
+        filtered_df["type"]
+        .isin(content_type)
     ]
 
 if ratings:
     filtered_df = filtered_df[
-        filtered_df["rating"].isin(ratings)
+        filtered_df["rating"]
+        .isin(ratings)
     ]
 
 # =====================================
 # SEARCH
 # =====================================
 
-st.subheader("🔍 Search Netflix Titles")
+st.subheader("🔍 Search Titles")
 
 search = st.text_input(
-    "Enter Movie or TV Show Name"
+    "Enter Title"
 )
 
 if search:
@@ -84,7 +86,7 @@ if search:
 
     st.dataframe(
         results,
-        use_container_width=True
+        width="stretch"
     )
 
 # =====================================
@@ -101,7 +103,7 @@ movies = len(
     ]
 )
 
-tv_shows = len(
+tvshows = len(
     filtered_df[
         filtered_df["type"] == "TV Show"
     ]
@@ -127,32 +129,12 @@ col2.metric(
 
 col3.metric(
     "TV Shows",
-    tv_shows
+    tvshows
 )
 
 col4.metric(
     "Countries",
     countries
-)
-
-# =====================================
-# DATASET INFO
-# =====================================
-
-st.subheader("📁 Dataset Information")
-
-info1, info2, info3 = st.columns(3)
-
-info1.info(
-    f"Rows: {filtered_df.shape[0]}"
-)
-
-info2.info(
-    f"Columns: {filtered_df.shape[1]}"
-)
-
-info3.info(
-    f"Missing Values: {int(filtered_df.isnull().sum().sum())}"
 )
 
 # =====================================
@@ -163,23 +145,7 @@ st.subheader("📄 Dataset Preview")
 
 st.dataframe(
     filtered_df.head(20),
-    use_container_width=True
-)
-
-# =====================================
-# MISSING VALUES
-# =====================================
-
-st.subheader("⚠ Missing Values")
-
-missing_df = pd.DataFrame(
-    filtered_df.isnull().sum(),
-    columns=["Missing Count"]
-)
-
-st.dataframe(
-    missing_df,
-    use_container_width=True
+    width="stretch"
 )
 
 # =====================================
@@ -195,10 +161,7 @@ country_data = (
     .head(10)
 )
 
-st.dataframe(
-    country_data,
-    use_container_width=True
-)
+st.bar_chart(country_data)
 
 # =====================================
 # TOP GENRES
@@ -215,10 +178,7 @@ genre_data = (
     .head(10)
 )
 
-st.dataframe(
-    genre_data,
-    use_container_width=True
-)
+st.bar_chart(genre_data)
 
 # =====================================
 # EXECUTIVE SUMMARY
@@ -228,11 +188,11 @@ st.subheader("📈 Executive Summary")
 
 st.success(
     f"""
-Dataset contains {total_titles} Netflix titles.
+Total Titles: {total_titles}
 
 Movies: {movies}
 
-TV Shows: {tv_shows}
+TV Shows: {tvshows}
 
 Countries Represented: {countries}
 """
